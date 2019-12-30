@@ -76,7 +76,7 @@ function processPassageElement(passageElement) {
     PASSAGE_ATTRIBUTES.forEach((attributeName) => {
         result[attributeName] = passageMeta[attributeName];
     });
-    const text = passageElement.innerText;
+    const text = passageElement.innerText.trim();
     result.text = text;
     result.links = extractLinks(text);
     result.macros = extractMacros(text);
@@ -115,7 +115,7 @@ function extractLinks(passageText) {
             linkText = match;
             passageName = match;
         }
-        return { linkText: linkText, passageName: passageName };
+        return { linkText: linkText.trim(), passageName: passageName.trim() };
     });
     return links;
 }
@@ -130,8 +130,8 @@ function extractMacros(passageText) {
         let macroName;
         let macroValue;
         if (match.length === 3) {
-            macroName = match[1];
-            macroValue = match[2];
+            macroName = match[1].trim();
+            macroValue = match[2].trim();
         }
         return { macroName: macroName, macroValue: macroValue };
     });
@@ -148,8 +148,8 @@ function extractHooks(passageText) {
         let hookValue;
         let hookName;
         if (match.length === 3) {
-            hookValue = match[1];
-            hookName = match[2];
+            hookValue = match[1].trim();
+            hookName = match[2].trim();
         }
         return { hookName: hookName, hookValue: hookValue };
     });
@@ -158,8 +158,8 @@ function extractHooks(passageText) {
         let hookValue;
         let hookName;
         if (match.length === 3) {
-            hookName = match[1];
-            hookValue = match[2];
+            hookName = match[1].trim();
+            hookValue = match[2].trim();
         }
         return { hookName: hookName, hookValue: hookValue };
     });
@@ -177,7 +177,7 @@ function extractHooks(passageText) {
             return hook.hookValue === hookText;
         });
         if (!isDuplicate) {
-            hooks.push({ hookName: undefined, hookValue: hookText });
+            hooks.push({ hookName: undefined, hookValue: hookText.trim() });
         }
     });
     return hooks.filter(hook => hook.hookValue);
@@ -199,6 +199,7 @@ function sanitizeText(passageText) {
     passageText = passageText.replace(REGEX_RIGHT_HOOK, '');
     passageText = passageText.replace(REGEX_LEFT_HOOK, '');
     passageText = passageText.replace(REGEX_ANON_HOOK, '');
+    passageText = passageText.trim();
     return passageText;
 }
 
