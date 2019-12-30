@@ -228,7 +228,7 @@ function stringStartsWith(string, startswith) {
 	<body>
         <pre id='content'></pre>
         <div id='storyData' style='display: none;'>{{STORY_DATA}}</div>
-        <script type='text/javascript'>document.getElementById('content').innerHTML = JSON.stringify(twineToJSON());</script>
+        <script type='text/javascript'>document.getElementById('content').innerHTML = JSON.stringify(twineToJSON(), null, 2);</script>
 	</body>
 </html>
 `
