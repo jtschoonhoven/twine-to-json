@@ -35,18 +35,18 @@ const STORY_TAG_NAME = 'tw-storydata';
 const PASSAGE_TAG_NAME = 'tw-passagedata';
 const STORY_ATTRIBUTES = ['name', 'creator', 'creator-version', 'format', 'format-version', 'ifid'];
 const PASSAGE_ATTRIBUTES = ['name', 'tags', 'pid'];
-const REGEX_LINK = /\[\[(.*?)\]\]/g;
-const REGEX_BRACKET = /[{\[\]}]/g;
-const REGEX_ITALICS = /[{\/\/}]/g;
-const REGEX_BOLD = /[{\'\'}]/g;
-const REGEX_STRIKE = /[{\~\~}]/g;
-const REGEX_EMPHASIS = /[{\*}]/g;
-const REGEX_STRONG = /[{\*\*}]/g;
-const REGEX_SUPER = /[{\^\^}]/g;
-const REGEX_MACRO = /\(([a-zA-Z]+):(.+)\)/g;
-const REGEX_RIGHT_HOOK = /\[(.+)\]\<(.+)\|/g;
-const REGEX_LEFT_HOOK = /\|(.+)\>\[(.+)\]/g;
-const REGEX_ANON_HOOK = /\s?\[(.+)\]/g;
+const REGEX_LINK = /\\[\\[(.*?)\\]\\]/g;
+const REGEX_BRACKET = /[{\\[\\]}]/g;
+const REGEX_ITALICS = /[{\\/\\/}]/g;
+const REGEX_BOLD = /[{\\'\\'}]/g;
+const REGEX_STRIKE = /[{\\~\\~}]/g;
+const REGEX_EMPHASIS = /[{\\*}]/g;
+const REGEX_STRONG = /[{\\*\\*}]/g;
+const REGEX_SUPER = /[{\\^\\^}]/g;
+const REGEX_MACRO = /\\(([a-zA-Z]+):(.+)\\)/g;
+const REGEX_RIGHT_HOOK = /\\[(.+)\\]<(.+)\\|/g;
+const REGEX_LEFT_HOOK = /\\|(.+)\>\\[(.+)\\]/g;
+const REGEX_ANON_HOOK = /\\s?\\[(.+)\\]/g;
 
 
 /**
