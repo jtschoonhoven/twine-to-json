@@ -180,7 +180,7 @@ function extractHooks(passageText) {
             hooks.push({ hookName: undefined, hookValue: hookText });
         }
     });
-    return hooks;
+    return hooks.filter(hook => hook.hookValue);
 }
 
 
