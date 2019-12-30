@@ -27,7 +27,6 @@ const FORMAT_TWINE = 'twine';
 const FORMAT_HARLOWE_3 = 'harlowe-3';
 const FORMAT_GEOTWINE = 'geotwine';
 const VALID_FORMATS = [FORMAT_TWINE, FORMAT_HARLOWE_3, FORMAT_GEOTWINE];
-const REGEX_LINK = /\[\[((.|\s)+)\]\]/g;
 const REGEX_BRACKET = /[{\[\]}]/g;
 const REGEX_ITALICS = /[{\/\/}]/g;
 const REGEX_BOLD = /[{\'\'}]/g;
@@ -35,10 +34,10 @@ const REGEX_STRIKE = /[{\~\~}]/g;
 const REGEX_EMPHASIS = /[{\*}]/g;
 const REGEX_STRONG = /[{\*\*}]/g;
 const REGEX_SUPER = /[{\^\^}]/g;
-const REGEX_MACRO = /\(([a-zA-Z]+):((.|\s)+)\)/g;
-const REGEX_RIGHT_HOOK = /\[((.|\s)+)\]<(.+)\|/g;
-const REGEX_LEFT_HOOK = /\|(.+)>\[((.|\s)+)\]/g;
-const REGEX_ANON_HOOK = /\s?\[((.|\s)+)\]/g;
+const REGEX_MACRO = /\(([a-zA-Z]+):(.+)\)/g;
+const REGEX_RIGHT_HOOK = /\[((.|\n)+?)\]<(.+?)\|/g;
+const REGEX_LEFT_HOOK = /\|(.+?)\>\[((.|\n)+?)\]/g;
+const REGEX_ANON_HOOK = /\s?\[(.+)\]/g;
 
 
 /**
@@ -96,34 +95,31 @@ function processPassageElement(passageElement, format) {
  * Extract link data from the passage text as an object.
  */
 function extractLinks(passageText) {
-    let matches = passageText.match(REGEX_LINK) || [];
-    // remove outer brackets
-    matches = matches.map((match) => {
-        return match.replace(REGEX_BRACKET, '');
+    const links = [];
+    let currentIndex = 0;
+    while (currentIndex < passageText.length) {
+        const currentChar = passageText[currentIndex];
+        const nextChar = passageText[currentIndex + 1];
+        if (currentChar === '[' && nextChar === '[') {
+            const link = getSubstringBetweenBrackets(passageText, currentIndex + 1);
+            links.push(link);
+            currentIndex += link.length;
+        }
+        currentIndex += 1;
+    }
+    return links.map((link) => {
+        const leftSplit = link.split('<-', 2);
+        const rightSplit = link.split('->', 2);
+        if (leftSplit.length === 2) {
+            return { linkText: leftSplit[1].trim(), passageName: leftSplit[0].trim() };
+        }
+        else if (rightSplit.length === 2) {
+            return { linkText: rightSplit[0].trim(), passageName: rightSplit[1].trim() };
+        }
+        else {
+            return { linkText: link.trim(), passageName: link.trim() };
+        }
     });
-    const links = matches.map((match) => {
-        let linkText;
-        let passageName;
-        // handle forward links
-        let split = match.split('->');
-        if (split.length === 2) {
-            linkText = split[0];
-            passageName = split[1];
-        }
-        // handle backward links
-        split = match.split('<-');
-        if (split.length === 2) {
-            linkText = split[1];
-            passageName = split[0];
-        }
-        // handle shorthand links
-        if (!linkText) {
-            linkText = match;
-            passageName = match;
-        }
-        return { linkText: linkText.trim(), passageName: passageName.trim() };
-    });
-    return links;
 }
 
 
@@ -153,7 +149,7 @@ function extractHooks(passageText) {
     const rightHooks = rightMatches.map((match) => {
         let hookValue;
         let hookName;
-        if (match.length === 3) {
+        if (match.length === 4) {
             hookValue = match[1].trim();
             hookName = match[2].trim();
         }
@@ -163,7 +159,7 @@ function extractHooks(passageText) {
     const leftHooks = leftMatches.map((match) => {
         let hookValue;
         let hookName;
-        if (match.length === 3) {
+        if (match.length === 4) {
             hookName = match[1].trim();
             hookValue = match[2].trim();
         }
@@ -194,7 +190,6 @@ function extractHooks(passageText) {
  * Remove links, macros, and markup from text.
  */
 function sanitizeText(passageText, format) {
-    passageText = passageText.replace(REGEX_LINK, '');
     if (format === FORMAT_HARLOWE_3) {
         passageText = passageText.replace(REGEX_ITALICS, '');
         passageText = passageText.replace(REGEX_BOLD, '');
@@ -230,4 +225,37 @@ function getElementAttributes(element) {
  */
 function stringStartsWith(string, startswith) {
     return string.trim().substring(0, startswith.length) === startswith;
+}
+
+
+function getSubstringBetweenBrackets(string, startIndex) {
+    const openBracket = '[';
+    const closeBracket = ']';
+    const bracketStack = [];
+    let currentIndex = startIndex || 0;
+    let substring = '';
+    if (string[currentIndex] !== openBracket) {
+        throw new Error('startIndex of getSubstringBetweenBrackets must correspond to an open bracket');
+    }
+    while (currentIndex < string.length) {
+        const currentChar = string[currentIndex];
+        // pull top bracket from stack if we hit a close bracket
+        if (currentChar === closeBracket) {
+            bracketStack.pop();
+        }
+        // build substring so long as stack is populated
+        if (bracketStack.length) {
+            substring += currentChar;
+        }
+        // add open brackets to the top of the stack
+        if (currentChar === openBracket) {
+            bracketStack.push(currentChar);
+        }
+        // return if stack is empty and substring is set
+        if (!bracketStack.length) {
+            return substring;
+        }
+        currentIndex += 1;
+    }
+    return substring;
 }
