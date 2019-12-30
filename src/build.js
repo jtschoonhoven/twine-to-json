@@ -1,15 +1,26 @@
 const fs = require('fs');
 
 
-const FORMATS = [{
-    name: 'Harlowe 3 to JSON',
-    version: '0.0.0',
-    description: 'Convert Harlowe 3-formatted Twine story to JSON',
-    scriptPath: 'src/harlowe-3.js',
-    templatePath: 'templates/json.html',
-    commandString: 'twineToJSON()',
-    buildPath: 'dist/harlowe-3.js',
-}];
+const FORMATS = [
+    {
+        name: 'Twine to JSON',
+        version: '0.0.0',
+        description: 'Convert Twine story to JSON',
+        scriptPath: 'src/twine-to-json.js',
+        templatePath: 'templates/json.html',
+        commandString: 'twineToJSON("twine")',
+        buildPath: 'dist/twine.js',
+    },
+    {
+        name: 'Harlowe 3 to JSON',
+        version: '0.0.0',
+        description: 'Convert Harlowe 3-formatted Twine story to JSON',
+        scriptPath: 'src/twine-to-json.js',
+        templatePath: 'templates/json.html',
+        commandString: 'twineToJSON("harlowe-3")',
+        buildPath: 'dist/harlowe-3.js',
+    },
+];
 
 
 function build() {

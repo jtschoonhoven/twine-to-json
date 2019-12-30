@@ -1,4 +1,16 @@
-/**
+window.storyFormat({
+    "name": "Twine to JSON",
+    "version": "0.0.0",
+    "author": "Jonathan Schoonhoven",
+    "description": "Convert Twine story to JSON",
+    "proofing": false,
+    "source": `
+<html>
+	<head>
+        <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
+		<title>Harlowe To JSON</title>
+        <script type='text/javascript'>
+            /**
 * Twine To JSON
 *
 * Copyright (c) 2020 Jonathan Schoonhoven
@@ -23,35 +35,50 @@ const STORY_TAG_NAME = 'tw-storydata';
 const PASSAGE_TAG_NAME = 'tw-passagedata';
 const STORY_ATTRIBUTES = ['name', 'creator', 'creator-version', 'format', 'format-version', 'ifid'];
 const PASSAGE_ATTRIBUTES = ['name', 'tags', 'pid'];
-const REGEX_LINK = /\[\[(.*?)\]\]/g;
-const REGEX_BRACKET = /[{\[\]}]/g;
-const REGEX_ITALICS = /[{\/\/}]/g;
-const REGEX_BOLD = /[{\'\'}]/g;
-const REGEX_STRIKE = /[{\~\~}]/g;
-const REGEX_EMPHASIS = /[{\*}]/g;
-const REGEX_STRONG = /[{\*\*}]/g;
-const REGEX_SUPER = /[{\^\^}]/g;
-const REGEX_MACRO = /\(([a-zA-Z]+):(.+)\)/g;
-const REGEX_RIGHT_HOOK = /\[(.+)\]<(.+)\|/g;
-const REGEX_LEFT_HOOK = /\|(.+)\>\[(.+)\]/g;
-const REGEX_ANON_HOOK = /\s?\[(.+)\]/g;
+const FORMAT_TWINE = 'twine';
+const FORMAT_HARLOWE_3 = 'harlowe-3';
+const VALID_FORMATS = [FORMAT_TWINE, FORMAT_HARLOWE_3];
+const REGEX_LINK = /\\[\\[(.*?)\\]\\]/g;
+const REGEX_BRACKET = /[{\\[\\]}]/g;
+const REGEX_ITALICS = /[{\\/\\/}]/g;
+const REGEX_BOLD = /[{\\'\\'}]/g;
+const REGEX_STRIKE = /[{\\~\\~}]/g;
+const REGEX_EMPHASIS = /[{\\*}]/g;
+const REGEX_STRONG = /[{\\*\\*}]/g;
+const REGEX_SUPER = /[{\\^\\^}]/g;
+const REGEX_MACRO = /\\(([a-zA-Z]+):(.+)\\)/g;
+const REGEX_RIGHT_HOOK = /\\[(.+)\\]<(.+)\\|/g;
+const REGEX_LEFT_HOOK = /\\|(.+)\\>\\[(.+)\\]/g;
+const REGEX_ANON_HOOK = /\\s?\\[(.+)\\]/g;
 
 
 /**
  * Convert Twine story to JSON.
  */
-function twineToJSON() {
+function twineToJSON(format) {
     const result = {};
     const storyElement = document.getElementsByTagName(STORY_TAG_NAME)[0];
     const storyMeta = getElementAttributes(storyElement);
+    validate(format);
     STORY_ATTRIBUTES.forEach((attributeName) => {
         result[attributeName] = storyMeta[attributeName];
     });
     const passageElements = Array.from(storyElement.getElementsByTagName(PASSAGE_TAG_NAME));
     result.passages = passageElements.map((passageElement) => {
-        return processPassageElement(passageElement);
+        return processPassageElement(passageElement, format);
     });
     return result;
+}
+
+
+/**
+ * Validate story and inputs. Currently this only validates the format arg. TODO: make this more robust.
+ */
+function validate(format) {
+    const isValidFormat = VALID_FORMATS.some(formatName === format);
+    if (!isValidFormat) {
+        throw new Error('Format is not valid.');
+    }
 }
 
 
@@ -67,9 +94,11 @@ function processPassageElement(passageElement) {
     const text = passageElement.innerText.trim();
     result.text = text;
     result.links = extractLinks(text);
-    result.macros = extractMacros(text);
-    result.hooks = extractHooks(text);
-    result.cleanText = sanitizeText(text);
+    if (format === FORMAT_HARLOWE_3) {
+        result.macros = extractMacros(text);
+        result.hooks = extractHooks(text);
+    }
+    result.cleanText = sanitizeText(text, format);
     return result;
 }
 
@@ -175,18 +204,20 @@ function extractHooks(passageText) {
 /**
  * Remove links, macros, and markup from text.
  */
-function sanitizeText(passageText) {
+function sanitizeText(passageText, format) {
     passageText = passageText.replace(REGEX_LINK, '');
-    passageText = passageText.replace(REGEX_ITALICS, '');
-    passageText = passageText.replace(REGEX_BOLD, '');
-    passageText = passageText.replace(REGEX_STRIKE, '');
-    passageText = passageText.replace(REGEX_EMPHASIS, '');
-    passageText = passageText.replace(REGEX_STRONG, '');
-    passageText = passageText.replace(REGEX_SUPER, '');
-    passageText = passageText.replace(REGEX_MACRO, '');
-    passageText = passageText.replace(REGEX_RIGHT_HOOK, '');
-    passageText = passageText.replace(REGEX_LEFT_HOOK, '');
-    passageText = passageText.replace(REGEX_ANON_HOOK, '');
+    if (format === FORMAT_HARLOWE_3) {
+        passageText = passageText.replace(REGEX_ITALICS, '');
+        passageText = passageText.replace(REGEX_BOLD, '');
+        passageText = passageText.replace(REGEX_STRIKE, '');
+        passageText = passageText.replace(REGEX_EMPHASIS, '');
+        passageText = passageText.replace(REGEX_STRONG, '');
+        passageText = passageText.replace(REGEX_SUPER, '');
+        passageText = passageText.replace(REGEX_MACRO, '');
+        passageText = passageText.replace(REGEX_RIGHT_HOOK, '');
+        passageText = passageText.replace(REGEX_LEFT_HOOK, '');
+        passageText = passageText.replace(REGEX_ANON_HOOK, '');
+    }
     passageText = passageText.trim();
     return passageText;
 }
@@ -211,3 +242,14 @@ function getElementAttributes(element) {
 function stringStartsWith(string, startswith) {
     return string.trim().substring(0, startswith.length) === startswith;
 }
+
+        </script>
+	</head>
+	<body>
+        <pre id='content'></pre>
+        <div id='storyData' style='display: none;'>{{STORY_DATA}}</div>
+        <script type='text/javascript'>document.getElementById('content').innerHTML = JSON.stringify(twineToJSON("twine"), null, 2);</script>
+	</body>
+</html>
+`
+});
