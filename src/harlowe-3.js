@@ -1,15 +1,3 @@
-window.storyFormat({
-    "name": "Harlowe3ToJSON",
-    "version": "0.0.0",
-    "author": "Jonathan Schoonhoven",
-    "description": "Convert Harlowe 3 Twine story to JSON.",
-    "proofing": false,
-    "source": `
-<html>
-	<head>
-        <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
-		<title>Harlowe To JSON</title>
-		<script type='text/javascript'>
 /**
 * Twine To JSON
 *
@@ -35,18 +23,18 @@ const STORY_TAG_NAME = 'tw-storydata';
 const PASSAGE_TAG_NAME = 'tw-passagedata';
 const STORY_ATTRIBUTES = ['name', 'creator', 'creator-version', 'format', 'format-version', 'ifid'];
 const PASSAGE_ATTRIBUTES = ['name', 'tags', 'pid'];
-const REGEX_LINK = /\\[\\[(.*?)\\]\\]/g;
-const REGEX_BRACKET = /[{\\[\\]}]/g;
-const REGEX_ITALICS = /[{\\/\\/}]/g;
-const REGEX_BOLD = /[{\\'\\'}]/g;
-const REGEX_STRIKE = /[{\\~\\~}]/g;
-const REGEX_EMPHASIS = /[{\\*}]/g;
-const REGEX_STRONG = /[{\\*\\*}]/g;
-const REGEX_SUPER = /[{\\^\\^}]/g;
-const REGEX_MACRO = /\\(([a-zA-Z]+):(.+)\\)/g;
-const REGEX_RIGHT_HOOK = /\\[(.+)\\]<(.+)\\|/g;
-const REGEX_LEFT_HOOK = /\\|(.+)\>\\[(.+)\\]/g;
-const REGEX_ANON_HOOK = /\\s?\\[(.+)\\]/g;
+const REGEX_LINK = /\[\[(.*?)\]\]/g;
+const REGEX_BRACKET = /[{\[\]}]/g;
+const REGEX_ITALICS = /[{\/\/}]/g;
+const REGEX_BOLD = /[{\'\'}]/g;
+const REGEX_STRIKE = /[{\~\~}]/g;
+const REGEX_EMPHASIS = /[{\*}]/g;
+const REGEX_STRONG = /[{\*\*}]/g;
+const REGEX_SUPER = /[{\^\^}]/g;
+const REGEX_MACRO = /\(([a-zA-Z]+):(.+)\)/g;
+const REGEX_RIGHT_HOOK = /\[(.+)\]<(.+)\|/g;
+const REGEX_LEFT_HOOK = /\|(.+)\>\[(.+)\]/g;
+const REGEX_ANON_HOOK = /\s?\[(.+)\]/g;
 
 
 /**
@@ -223,14 +211,3 @@ function getElementAttributes(element) {
 function stringStartsWith(string, startswith) {
     return string.trim().substring(0, startswith.length) === startswith;
 }
-/** END **/
-        </script>
-	</head>
-	<body>
-        <pre id='content'></pre>
-        <div id='storyData' style='display: none;'>{{STORY_DATA}}</div>
-        <script type='text/javascript'>document.getElementById('content').innerHTML = JSON.stringify(twineToJSON(), null, 2);</script>
-	</body>
-</html>
-`
-});

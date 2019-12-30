@@ -1,0 +1,14 @@
+<html>
+	<head>
+        <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
+		<title>Harlowe To JSON</title>
+        <script type='text/javascript'>
+            {{SCRIPT}}
+        </script>
+	</head>
+	<body>
+        <pre id='content'></pre>
+        <div id='storyData' style='display: none;'>{{STORY_DATA}}</div>
+        <script type='text/javascript'>document.getElementById('content').innerHTML = JSON.stringify({{COMMAND}}, null, 2);</script>
+	</body>
+</html>
