@@ -56,5 +56,6 @@ window.storyFormat({
     "proofing": false,
     "source": \`
 ${source}\`
-});`
+});
+`
 }
