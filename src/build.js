@@ -4,7 +4,7 @@ const fs = require('fs');
 const FORMATS = [{
     name: 'Harlowe 3 to JSON',
     version: '0.0.0',
-    description: 'Converst Harlowe 3-formatted Twine story to JSON',
+    description: 'Convert Harlowe 3-formatted Twine story to JSON',
     scriptPath: 'src/harlowe-3.js',
     templatePath: 'templates/json.html',
     commandString: 'twineToJSON()',
