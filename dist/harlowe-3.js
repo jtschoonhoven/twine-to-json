@@ -1,6 +1,6 @@
 window.storyFormat({
     "name": "Harlowe 3 to JSON",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "author": "Jonathan Schoonhoven",
     "description": "Convert Harlowe 3-formatted Twine story to JSON",
     "proofing": false,
@@ -85,7 +85,7 @@ function validate(format) {
 /**
  * Convert the HTML element for a story passage to JSON.
  */
-function processPassageElement(passageElement) {
+function processPassageElement(passageElement, format) {
     const result = {};
     const passageMeta = getElementAttributes(passageElement);
     PASSAGE_ATTRIBUTES.forEach((attributeName) => {
