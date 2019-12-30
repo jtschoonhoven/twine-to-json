@@ -1,14 +1,14 @@
 window.storyFormat({
-    "name": "TwineToJSON",
+    "name": "Harlowe3ToJSON",
     "version": "0.0.0",
     "author": "Jonathan Schoonhoven",
-    "description": "Convert Twine story to JSON.",
+    "description": "Convert Harlowe 3 Twine story to JSON.",
     "proofing": false,
     "source": `
 <html>
 	<head>
         <meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />
-		<title>Twine To JSON</title>
+		<title>Harlowe To JSON</title>
 		<script type='text/javascript'>
 /**
 * Twine To JSON
