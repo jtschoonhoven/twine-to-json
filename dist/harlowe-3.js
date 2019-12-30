@@ -75,7 +75,7 @@ function twineToJSON(format) {
  * Validate story and inputs. Currently this only validates the format arg. TODO: make this more robust.
  */
 function validate(format) {
-    const isValidFormat = VALID_FORMATS.some(formatName === format);
+    const isValidFormat = VALID_FORMATS.some(validFormat => validFormat === format);
     if (!isValidFormat) {
         throw new Error('Format is not valid.');
     }
