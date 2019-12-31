@@ -1,6 +1,6 @@
 window.storyFormat({
     "name": "Harlowe 3 to JSON",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "author": "Jonathan Schoonhoven",
     "description": "Convert Harlowe 3-formatted Twine story to JSON",
     "proofing": false,
@@ -37,19 +37,7 @@ const STORY_ATTRIBUTES = ['name', 'creator', 'creator-version', 'format', 'forma
 const PASSAGE_ATTRIBUTES = ['name', 'tags', 'pid'];
 const FORMAT_TWINE = 'twine';
 const FORMAT_HARLOWE_3 = 'harlowe-3';
-const FORMAT_GEOTWINE = 'geotwine';
-const VALID_FORMATS = [FORMAT_TWINE, FORMAT_HARLOWE_3, FORMAT_GEOTWINE];
-const REGEX_BRACKET = /[{\\[\\]}]/g;
-const REGEX_ITALICS = /[{\\/\\/}]/g;
-const REGEX_BOLD = /[{\\'\\'}]/g;
-const REGEX_STRIKE = /[{\\~\\~}]/g;
-const REGEX_EMPHASIS = /[{\\*}]/g;
-const REGEX_STRONG = /[{\\*\\*}]/g;
-const REGEX_SUPER = /[{\\^\\^}]/g;
-const REGEX_MACRO = /\\(([a-zA-Z]+):(.+)\\)/g;
-const REGEX_RIGHT_HOOK = /\\[((.|\\n)+?)\\]<(.+?)\\|/g;
-const REGEX_LEFT_HOOK = /\\|(.+?)\\>\\[((.|\\n)+?)\\]/g;
-const REGEX_ANON_HOOK = /\\s?\\[(.+)\\]/g;
+const VALID_FORMATS = [FORMAT_TWINE, FORMAT_HARLOWE_3];
 
 
 /**
@@ -91,132 +79,117 @@ function processPassageElement(passageElement, format) {
     PASSAGE_ATTRIBUTES.forEach((attributeName) => {
         result[attributeName] = passageMeta[attributeName];
     });
-    const text = passageElement.innerText.trim();
-    result.text = text;
-    result.links = extractLinks(text);
-    if (format === FORMAT_HARLOWE_3) {
-        result.macros = extractMacros(text);
-        result.hooks = extractHooks(text);
-    }
-    result.cleanText = sanitizeText(text, format);
+    result.text = passageElement.innerText.trim();
+    Object.assign(result, processPassageText(result.text, format));
+    result.cleanText = sanitizeText(result.text, result.links, result.hooks, format);
     return result;
 }
 
 
-/**
- * Extract link data from the passage text as an object.
- */
-function extractLinks(passageText) {
-    const links = [];
+function processPassageText(passageText, format) {
+    const result = { links: [] };
+    if (format === FORMAT_HARLOWE_3) {
+        result.hooks = [];
+    }
     let currentIndex = 0;
     while (currentIndex < passageText.length) {
-        const currentChar = passageText[currentIndex];
-        const nextChar = passageText[currentIndex + 1];
-        if (currentChar === '[' && nextChar === '[') {
-            const link = getSubstringBetweenBrackets(passageText, currentIndex + 1);
-            links.push(link);
-            currentIndex += link.length;
+        const maybeLink = extractLinksAtIndex(passageText, currentIndex);
+        if (maybeLink) {
+            result.links.push(maybeLink);
+            currentIndex += maybeLink.original.length;
+        }
+        if (format !== FORMAT_HARLOWE_3) {
+            currentIndex += 1;
+            continue;
+        }
+        const maybeLeftHook = extractLeftHooksAtIndex(passageText, currentIndex);
+        if (maybeLeftHook) {
+            result.hooks.push(maybeLeftHook);
+            currentIndex += maybeLeftHook.original.length;
         }
         currentIndex += 1;
+        const maybeHook = extractHooksAtIndex(passageText, currentIndex);
+        if (maybeHook) {
+            result.hooks.push(maybeHook);
+            currentIndex += maybeHook.original.length;
+        }
     }
-    return links.map((link) => {
+    return result;
+}
+
+
+function extractLinksAtIndex(passageText, currentIndex) {
+    const currentChar = passageText[currentIndex];
+    const nextChar = passageText[currentIndex + 1];
+    if (currentChar === '[' && nextChar === '[') {
+        const link = getSubstringBetweenBrackets(passageText, currentIndex + 1);
         const leftSplit = link.split('<-', 2);
         const rightSplit = link.split('->', 2);
+        const original = passageText.substring(currentIndex, currentIndex + link.length + 4);
         if (leftSplit.length === 2) {
-            return { linkText: leftSplit[1].trim(), passageName: leftSplit[0].trim() };
+            return { linkText: leftSplit[1].trim(), passageName: leftSplit[0].trim(), original: original };
         }
         else if (rightSplit.length === 2) {
-            return { linkText: rightSplit[0].trim(), passageName: rightSplit[1].trim() };
+            return { linkText: rightSplit[0].trim(), passageName: rightSplit[1].trim(), original: original };
         }
         else {
-            return { linkText: link.trim(), passageName: link.trim() };
+            return { linkText: link.trim(), passageName: link.trim(), original: original };
         }
-    });
-}
-
-
-/**
- * Extract macros from passage text as objects.
- */
-function extractMacros(passageText) {
-    const matches = Array.from(passageText.matchAll(REGEX_MACRO));
-    const macros = matches.map((match) => {
-        let macroName;
-        let macroValue;
-        if (match.length === 3) {
-            macroName = match[1].trim();
-            macroValue = match[2].trim();
-        }
-        return { macroName: macroName, macroValue: macroValue };
-    });
-    return macros;
-}
-
-
-/**
- * Extract hooks from passage text as objects.
- */
-function extractHooks(passageText) {
-    const rightMatches = Array.from(passageText.matchAll(REGEX_RIGHT_HOOK));
-    const rightHooks = rightMatches.map((match) => {
-        let hookValue;
-        let hookName;
-        if (match.length === 4) {
-            hookValue = match[1].trim();
-            hookName = match[2].trim();
-        }
-        return { hookName: hookName, hookValue: hookValue };
-    });
-    const leftMatches = Array.from(passageText.matchAll(REGEX_LEFT_HOOK));
-    const leftHooks = leftMatches.map((match) => {
-        let hookValue;
-        let hookName;
-        if (match.length === 4) {
-            hookName = match[1].trim();
-            hookValue = match[2].trim();
-        }
-        return { hookName: hookName, hookValue: hookValue };
-    });
-    const hooks = rightHooks.concat(leftHooks);
-    const anonMatches = Array.from(passageText.matchAll(REGEX_ANON_HOOK));
-    anonMatches.forEach((match) => {
-        if (match.length !== 2) {
-            return;
-        }
-        const hookText = match[1];
-        if (stringStartsWith(hookText, '[')) {
-            return;
-        }
-        const isDuplicate = hooks.some((hook) => {
-            return hook.hookValue === hookText;
-        });
-        if (!isDuplicate) {
-            hooks.push({ hookName: undefined, hookValue: hookText.trim() });
-        }
-    });
-    return hooks.filter(hook => hook.hookValue);
-}
-
-
-/**
- * Remove links, macros, and markup from text.
- */
-function sanitizeText(passageText, format) {
-    passageText = passageText.replace(REGEX_LINK, '');
-    if (format === FORMAT_HARLOWE_3) {
-        passageText = passageText.replace(REGEX_ITALICS, '');
-        passageText = passageText.replace(REGEX_BOLD, '');
-        passageText = passageText.replace(REGEX_STRIKE, '');
-        passageText = passageText.replace(REGEX_EMPHASIS, '');
-        passageText = passageText.replace(REGEX_STRONG, '');
-        passageText = passageText.replace(REGEX_SUPER, '');
-        passageText = passageText.replace(REGEX_MACRO, '');
-        passageText = passageText.replace(REGEX_RIGHT_HOOK, '');
-        passageText = passageText.replace(REGEX_LEFT_HOOK, '');
-        passageText = passageText.replace(REGEX_ANON_HOOK, '');
     }
-    passageText = passageText.trim();
-    return passageText;
+}
+
+
+function extractLeftHooksAtIndex(passageText, currentIndex) {
+    const regexAlphaNum = /[a-z0-9]+/i;
+    const currentChar = passageText[currentIndex];
+    if (currentChar === '|') {
+        const maybeHookName = getSubstringBetweenBrackets(passageText, currentIndex, '|', '>');
+        if (maybeHookName.match(regexAlphaNum)) {
+            const hookStartIndex = currentIndex + maybeHookName.length + 2; // advance to next char after ">"
+            const hookStartChar = passageText[hookStartIndex];
+            if (hookStartChar === '[') {
+                const hookText = getSubstringBetweenBrackets(passageText, hookStartIndex);
+                const hookEndIndex = hookStartIndex + hookText.length + 2;
+                const original = passageText.substring(currentIndex, hookEndIndex);
+                return { hookName: maybeHookName, hookText: hookText, original: original };
+            }
+        }
+    }
+}
+
+
+function extractHooksAtIndex(passageText, currentIndex) {
+    const regexAlphaNum = /[a-z0-9]+/i;
+    const currentChar = passageText[currentIndex];
+    const nextChar = passageText[currentIndex + 1];
+    const prevChar = currentIndex && passageText[currentIndex - 1];
+    if (currentChar === '[' && nextChar !== '[' && prevChar !== '[') {
+        const hookText = getSubstringBetweenBrackets(passageText, currentIndex);
+        const hookEndIndex = currentIndex + hookText.length + 2;
+        const hookEndChar = passageText[hookEndIndex];
+        if (hookEndChar === '<') {
+            const maybeHookName = getSubstringBetweenBrackets(passageText, hookEndIndex, '<', '|');
+            if (maybeHookName.match(regexAlphaNum)) {
+                const original = passageText.substring(currentIndex, hookEndIndex + maybeHookName.length + 2);
+                return { hookName: maybeHookName, hookText: hookText, original: original };
+            }
+        }
+        const original = passageText.substring(currentIndex, hookText.length + 2);
+        return { hookName: undefined, hookText: hookText, original: original };
+    }
+}
+
+
+function sanitizeText(passageText, links, hooks, format) {
+    links.forEach((link) => {
+        passageText = passageText.replace(link.original, '');
+    });
+    if (format === FORMAT_HARLOWE_3) {
+        hooks.forEach((hook) => {
+            passageText = passageText.replace(hook.original, '');
+        });
+    }
+    return passageText.trim();
 }
 
 
@@ -241,9 +214,9 @@ function stringStartsWith(string, startswith) {
 }
 
 
-function getSubstringBetweenBrackets(string, startIndex) {
-    const openBracket = '[';
-    const closeBracket = ']';
+function getSubstringBetweenBrackets(string, startIndex, openBracket, closeBracket) {
+    openBracket = openBracket || '[';
+    closeBracket = closeBracket || ']';
     const bracketStack = [];
     let currentIndex = startIndex || 0;
     let substring = '';
