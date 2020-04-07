@@ -37,15 +37,15 @@ From within your story, set the story format to Twison. Choosing "Play" will now
 {
   "name": "GeoTest",
   "creator": "Twine",
-  "creator-version": "2.3.5",
-  "format": "Harlowe 3 to JSON",
-  "format-version": "0.0.3",
-  "ifid": "A0472E68-7822-4211-9F11-5CBD919162DC",
+  "creatorVersion": "2.3.5",
+  "schema": "Harlowe 3 to JSON",
+  "schemaVersion": "0.0.5",
+  "uuid": "A0472E68-7822-4211-9F11-5CBD919162DC",
   "passages": [
     {
       "name": "StoryStart",
       "tags": "",
-      "pid": "1",
+      "id": "1",
       "text": "Once upon a time there was a sheep.\n[[Pet the sheep -> PetSheep]]",
       "links": [
         {
@@ -60,7 +60,7 @@ From within your story, set the story format to Twison. Choosing "Play" will now
     {
       "name": " PetSheep",
       "tags": "",
-      "pid": "2",
+      "id": "2",
       "text": "You pet the sheep. The end.",
       "links": [],
       "hooks": [],

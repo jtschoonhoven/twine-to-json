@@ -21,7 +21,6 @@
 
 const STORY_TAG_NAME = 'tw-storydata';
 const PASSAGE_TAG_NAME = 'tw-passagedata';
-const PASSAGE_ATTRIBUTES = ['name', 'tags', 'pid'];
 const FORMAT_TWINE = 'twine';
 const FORMAT_HARLOWE_3 = 'harlowe-3';
 const VALID_FORMATS = [FORMAT_TWINE, FORMAT_HARLOWE_3];
@@ -66,11 +65,12 @@ function validate(format) {
  * Convert the HTML element for a story passage to JSON.
  */
 function processPassageElement(passageElement, format) {
-    const result = {};
     const passageMeta = getElementAttributes(passageElement);
-    PASSAGE_ATTRIBUTES.forEach((attributeName) => {
-        result[attributeName] = passageMeta[attributeName];
-    });
+    const result = {
+        name: passageMeta.name,
+        tags: passageMeta.tags,
+        id: passageMeta.pid,
+    };
     result.text = passageElement.innerText.trim();
     Object.assign(result, processPassageText(result.text, format));
     result.cleanText = sanitizeText(result.text, result.links, result.hooks, format);

@@ -1,6 +1,6 @@
 {
   "name": "twine-to-json",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Convert Twine stories to JSON for a variety of formats.",
   "scripts": {
     "build": "node ./src/build.js",
