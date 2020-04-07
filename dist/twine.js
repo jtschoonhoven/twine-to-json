@@ -33,7 +33,6 @@ window.storyFormat({
 
 const STORY_TAG_NAME = 'tw-storydata';
 const PASSAGE_TAG_NAME = 'tw-passagedata';
-const STORY_ATTRIBUTES = ['name', 'creator', 'creator-version', 'format', 'format-version', 'ifid'];
 const PASSAGE_ATTRIBUTES = ['name', 'tags', 'pid'];
 const FORMAT_TWINE = 'twine';
 const FORMAT_HARLOWE_3 = 'harlowe-3';
@@ -44,13 +43,18 @@ const VALID_FORMATS = [FORMAT_TWINE, FORMAT_HARLOWE_3];
  * Convert Twine story to JSON.
  */
 function twineToJSON(format) {
-    const result = {};
     const storyElement = document.getElementsByTagName(STORY_TAG_NAME)[0];
     const storyMeta = getElementAttributes(storyElement);
+    const result = {
+        uuid: storyMeta.ifid,
+        name: storyMeta.name,
+        creator: storyMeta.creator,
+        creatorVersion: storyMeta['creator-version'],
+        schemaName: storyMeta.format,
+        schemaVersion: storyMeta['format-version'],
+        createdAtMs: Date.now(),
+    };
     validate(format);
-    STORY_ATTRIBUTES.forEach((attributeName) => {
-        result[attributeName] = storyMeta[attributeName];
-    });
     const passageElements = Array.from(storyElement.getElementsByTagName(PASSAGE_TAG_NAME));
     result.passages = passageElements.map((passageElement) => {
         return processPassageElement(passageElement, format);
