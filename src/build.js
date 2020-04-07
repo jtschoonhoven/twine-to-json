@@ -1,10 +1,10 @@
 const fs = require('fs');
-
+const VERSION = JSON.parse(fs.readFileSync('package.json')).version;
 
 const FORMATS = [
     {
         name: 'Twine to JSON',
-        version: '0.0.3',
+        version: VERSION,
         description: 'Convert Twine story to JSON',
         scriptPath: 'src/twine-to-json.js',
         templatePath: 'templates/json.html',
@@ -13,7 +13,7 @@ const FORMATS = [
     },
     {
         name: 'Harlowe 3 to JSON',
-        version: '0.0.3',
+        version: VERSION,
         description: 'Convert Harlowe 3-formatted Twine story to JSON',
         scriptPath: 'src/twine-to-json.js',
         templatePath: 'templates/json.html',
